@@ -23,13 +23,17 @@ object FileUtils {
             check(::target.isInitialized) { "Target file must be specified" }
             check(data != null) { "Write data cannot be null" }
             target.parentFile?.mkdirs()
-            when (data) {
-                is String -> writeText(target, data as String, mode)
-                is ByteArray -> writeBytes(target, data as ByteArray, mode)
-                is InputStream -> writeStream(target, data as InputStream, mode)
-                else -> encoder?.invoke(data!!)?.let { writeBytes(target, it, mode) }
-                    ?: error("Unsupported data type: ${data!!::class.java}")
+
+            data?.let {
+                when (it) {
+                    is String -> writeText(target, it, mode)
+                    is ByteArray -> writeBytes(target, it, mode)
+                    is InputStream -> writeStream(target, it, mode)
+                    else -> encoder?.invoke(it)?.let { coder -> writeBytes(target, coder, mode) }
+                        ?: error("Unsupported data type: ${it::class.java}")
+                }
             }
+
         }
 
 

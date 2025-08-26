@@ -42,6 +42,9 @@ object LogUtil {
 
     private var mCurrentWriter: BufferedWriter? = null
     private var mCurrentFileSize = 0L
+    
+    // 日志监听器列表
+    private val logListeners = mutableSetOf<LogListener>()
 
 
     /**
@@ -134,6 +137,35 @@ object LogUtil {
         mCoroutineScope.cancel()
         mCurrentWriter = null
     }
+    
+    /**
+     * 注册日志监听器
+     * @param listener 日志监听器
+     */
+    fun registerLogListener(listener: LogListener) {
+        logListeners.add(listener)
+    }
+    
+    /**
+     * 注销日志监听器
+     * @param listener 日志监听器
+     */
+    fun unregisterLogListener(listener: LogListener) {
+        logListeners.remove(listener)
+    }
+    
+    /**
+     * 通知所有监听器有新的日志产生
+     * @param logBean 日志对象
+     */
+    private fun notifyLogListeners(logBean: LogBean) {
+        // 在主线程中通知监听器
+        CoroutineScope(Dispatchers.Main).launch {
+            logListeners.forEach { listener ->
+                listener.onLog(logBean)
+            }
+        }
+    }
 
     /**
      * 日志批量写入协程
@@ -196,6 +228,8 @@ object LogUtil {
         if (mConfig.isDebug) {
             // debug模式才输出日志
             printLog(logBean)
+            // 通知监听器
+            notifyLogListeners(logBean)
         }
         if (mConfig.isSaveFile) {
             // 排进队列
@@ -459,5 +493,16 @@ object LogUtil {
         WARN,
         ERROR,
         WFT
+    }
+    
+    /**
+     * 日志监听器接口
+     */
+    interface LogListener {
+        /**
+         * 当有新的日志产生时回调
+         * @param logBean 日志对象
+         */
+        fun onLog(logBean: LogBean)
     }
 }

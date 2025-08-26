@@ -112,7 +112,7 @@ object FoldUtils {
                     Int::class.javaPrimitiveType
                 )
                 // 调用 getInt方法对persist.sys.muiltdisplay_type 属性值来进行判断
-                isXiaomiFold = (method.invoke(null, "persist.sys.muiltdisplay_type", 0) as Int) == 2
+                isXiaomiFold = (method.invoke(null, "persist.sys.muiltdisplay_type", 0) as? Int) == 2
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -120,9 +120,12 @@ object FoldUtils {
         }
 
     private fun isSysFold(activity: Activity): Boolean {
-        val sensorManager = activity.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        val hingeSensor = sensorManager.getDefaultSensor(Sensor.TYPE_HINGE_ANGLE)
-        return hingeSensor != null
+        return when (val sensorManager = activity.getSystemService(Context.SENSOR_SERVICE)){
+            is SensorManager ->{
+                sensorManager.getDefaultSensor(Sensor.TYPE_HINGE_ANGLE)!=null
+            }
+            else -> false
+        }
     }
 
     /**
