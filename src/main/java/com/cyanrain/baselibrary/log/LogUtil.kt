@@ -42,7 +42,7 @@ object LogUtil {
 
     private var mCurrentWriter: BufferedWriter? = null
     private var mCurrentFileSize = 0L
-    
+
     // 日志监听器列表
     private val logListeners = mutableSetOf<LogListener>()
 
@@ -137,7 +137,7 @@ object LogUtil {
         mCoroutineScope.cancel()
         mCurrentWriter = null
     }
-    
+
     /**
      * 注册日志监听器
      * @param listener 日志监听器
@@ -145,7 +145,7 @@ object LogUtil {
     fun registerLogListener(listener: LogListener) {
         logListeners.add(listener)
     }
-    
+
     /**
      * 注销日志监听器
      * @param listener 日志监听器
@@ -153,7 +153,7 @@ object LogUtil {
     fun unregisterLogListener(listener: LogListener) {
         logListeners.remove(listener)
     }
-    
+
     /**
      * 通知所有监听器有新的日志产生
      * @param logBean 日志对象
@@ -205,7 +205,7 @@ object LogUtil {
      * @return LogBean 日志对象
      */
     private fun str2Log(content: String): LogBean {
-        return mConverter.fromJson(content)
+        return mConverter.fromJson(content.trim())
     }
 
     /**
@@ -251,7 +251,7 @@ object LogUtil {
 //        Log.d(TAG, "saveBatchToFile logBatch:$logBatch")
         mMutex.withLock {
             try {
-                val content = logBatch.joinToString("\n") { log2Str(it) }
+                val content = logBatch.joinToString("\n") { log2Str(it) } + "\n"
 
                 val targetFile = getCurrentActiveFile()
 
@@ -494,7 +494,7 @@ object LogUtil {
         ERROR,
         WFT
     }
-    
+
     /**
      * 日志监听器接口
      */
